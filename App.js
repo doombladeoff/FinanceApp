@@ -1,74 +1,81 @@
-import Ionicons from '@expo/vector-icons/Ionicons'
+import { useEffect, useState } from "react";
+import { FIREBASE_AUTH } from "./config/FirebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from "@react-navigation/native";
-import { HomeScreen, StatisticScreen, HistoryScreen, ProfileScreen } from "./app/screens";
-import { FontAwesome, Fontisto, Octicons } from "@expo/vector-icons";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-const Tab = createBottomTabNavigator();
+import { TabNavigator, WelcomeStack } from "./app/navigation";
 
-export default function App() {
+import { Provider } from "react-redux";
+import store from "./store";
+import { RecentTransactions } from "./app/screens/RecentTransactions";
+
+const Stack = createNativeStackNavigator();
+
+const InnerNavigation = () => {
+    const [user, setUser] = useState(null);
+    useEffect(() => {
+        async function authUser() {
+            onAuthStateChanged(FIREBASE_AUTH, (user) => {
+                //console.log('USER:', user);
+                setUser(user);
+            });
+        }
+
+        authUser();
+    }, []);
     return (
-        <NavigationContainer>
-            <Tab.Navigator
-                screenOptions={{
-                    headerTitleAlign: "center",
-                    tabBarShowLabel: false,
-                    tabBarStyle: {
-                        shadowColor: 'black',
-                        shadowOffset: {
-                            width: 0,
-                            height: 25,
-                        },
-                        shadowOpacity: 1,
-                        shadowRadius: 10,
-                        elevation: 15,
-                    }
-                }}>
-                <Tab.Screen
-                    name="Home"
-                    component={HomeScreen}
+        <Stack.Navigator>
+            {user ? (
+                <Stack.Screen
+                    name="TabNavigator"
+                    component={TabNavigator}
                     options={{
                         headerShown: false,
-                        tabBarIcon: ({ color, size }) => (
-                            <Octicons name="home" size={size} color={color}/>
-                        ),
                     }}
                 />
-                <Tab.Screen
-                    name="Statistic"
-                    component={StatisticScreen}
+            ) : (
+                <Stack.Screen
+                    name="WelcomeStack"
+                    component={WelcomeStack}
                     options={{
-                        headerStyle: {
-                            shadowColor: 'white',
-                        },
-                        tabBarIcon: ({ color, size }) => (
-                            <Ionicons name="stats-chart" size={size} color={color}/>
-                        ),
+                        headerShown: false,
+                        animation: 'slide_from_left'
                     }}
                 />
-                <Tab.Screen
-                    name="History"
-                    component={HistoryScreen}
-                    options={{
-                        tabBarIcon: ({ color, size }) => (
-                            <Fontisto name="history" size={size} color={color}/>
-                        ),
-                    }}
-                />
-                <Tab.Screen
-                    name="Profile"
-                    component={ProfileScreen}
-                    options={{
-                        headerStyle: {
-                            shadowColor: 'white',
-                        },
-                        tabBarIcon: ({ color, size }) => (
-                            <FontAwesome name="user-circle" size={size} color={color}/>
-                        ),
-                    }}
-                />
-            </Tab.Navigator>
-        </NavigationContainer>
+            )}
+        </Stack.Navigator>
+    )
+}
+export default function App() {
+    return (
+        <Provider store={store}>
+            <NavigationContainer>
+                <Stack.Navigator>
+                    <Stack.Screen
+                        name={'FirstScreen'}
+                        component={InnerNavigation}
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name={'RecentTransactions'}
+                        component={RecentTransactions}
+                        options={{
+                            headerBackTitle: 'Transaction',
+                            headerBackTitleStyle: {
+                                color: 'white',
+                            },
+                            headerTitle: '',
+                            headerStyle: {
+                                backgroundColor: '#1a53cc',
+                            },
+                            headerTintColor: 'white',
+                        }}
+                    />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </Provider>
+
     );
 };

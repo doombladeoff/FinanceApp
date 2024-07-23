@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -20,7 +20,8 @@ export const StatisticCard = ({ title, value }) => {
                         marginVertical: 5,
                         backgroundColor: 'rgba(255, 255, 255, 0.5)',
                         padding: 5,
-                        borderRadius: 10
+                        borderRadius: 10,
+                        overflow: Platform.OS === 'ios' ? "hidden" : null
                     }}
                 />
 
