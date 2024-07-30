@@ -13,7 +13,7 @@ export const CompleteTransaction = ({ route }) => {
                 <View style={styles.content}>
                     <LottieView
                         onAnimationFinish={() => setDisabled(false)}
-                        source={type === 'success' ? require('../../assets/Animation - 1721824042066.json') : require('../../assets/Error.json')}
+                        source={type === 'success' ? require('../../assets/anim/Animation - 1721824042066.json') : require('../../assets/anim/Error.json')}
                         autoPlay
                         speed={2}
                         loop={false}

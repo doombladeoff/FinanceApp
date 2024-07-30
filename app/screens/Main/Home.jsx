@@ -35,11 +35,11 @@ export const HomeScreen = () => {
         } finally {
             setRefreshing(false);
         }
-    });
+    }, [user]);
 
     useEffect(() => {
         getTransactions();
-    }, []);
+    }, [getTransactions]);
 
 
     const handleNavigate = (screen, data) => navigation.navigate(screen, data);

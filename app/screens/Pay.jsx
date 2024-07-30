@@ -30,9 +30,10 @@ export const Pay = () => {
     const handleNavigate = (screen, data) => navigation.navigate(screen, data);
 
     return (
-        <View style={{ paddingHorizontal: 20, paddingVertical: 20, flex: 1 }}>
+        <View style={{ paddingHorizontal: 20, flex: 1 }}>
             <FlatList
                 data={paymentTypes}
+                showsVerticalScrollIndicator={false}
                 renderItem={({ item }) =>
                     <TouchableOpacity
                         onPress={() => {
@@ -44,7 +45,6 @@ export const Pay = () => {
                     </TouchableOpacity>
                 }
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={{ flex: 1 }}
             />
         </View>
     );

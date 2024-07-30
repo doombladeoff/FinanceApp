@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useEffect, useState } from "react";
 import { getUserData } from "../../../services/getUserData";
 import { FIREBASE_AUTH } from "../../../config/FirebaseConfig";
@@ -9,28 +9,57 @@ import { EmptyListTransaction } from "../../components/EmptyListTransaction";
 export const HistoryScreen = () => {
     const user = FIREBASE_AUTH?.currentUser;
     const [transactions, setTransactions] = useState([]);
+    const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
-        const getTransactions = async () => {
+    const getTransactions = async () => {
+        setRefreshing(true);
+        try {
             const { transactions } = await getUserData(user);
             setTransactions(transactions);
+        } catch (error) {
+            console.error('Error fetching transactions:', error);
+        } finally {
+            setRefreshing(false);
         }
+    };
+
+    useEffect(() => {
         getTransactions();
-    }, []);
+    }, [user]);
+
+    const onRefresh = () => {
+        getTransactions();
+    };
 
     const IncomeTransactions = transactions.filter(transaction => transaction.type === 'Income');
     const ExpenseTransactions = transactions.filter(transaction => transaction.type === 'Expense');
 
-    const handleSelect = (key) => {
-        console.log('Selected:', key);
-    }
     return (
-        <View style={{ flex: 1, paddingHorizontal: 20, backgroundColor: 'white' }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 20 }}>
+        <View style={{ flex: 1, backgroundColor: 'white' }}>
+            <View style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                paddingVertical: 20,
+                paddingHorizontal: 20
+            }}>
                 <Text style={{ fontWeight: "bold", fontSize: 14 }}>Filter</Text>
                 <Text style={{ fontWeight: "bold", fontSize: 14 }}>This Week</Text>
             </View>
-            <View style={{ gap: 20 }}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{
+                    justifyContent: "space-between",
+                    gap: 20,
+                    overflow: 'hidden',
+                    padding: 20
+                }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                    />
+                }
+            >
                 <AccordionItem
                     label={'Income'}
                     otherStyle={styles.accordionOtherStyle}
@@ -47,15 +76,15 @@ export const HistoryScreen = () => {
                     label={'Expense'}
                     otherStyle={styles.accordionOtherStyle}
                 >
-                    <ScrollView>
+                    <View>
                         {ExpenseTransactions.length === 0 ? <EmptyListTransaction/> : (
                             ExpenseTransactions.map(transaction =>
                                 <TransactionItem key={transaction.id} transaction={transaction}/>
                             )
                         )}
-                    </ScrollView>
+                    </View>
                 </AccordionItem>
-            </View>
+            </ScrollView>
         </View>
     );
 }

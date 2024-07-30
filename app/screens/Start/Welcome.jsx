@@ -8,7 +8,7 @@ export const WelcomeScreen = () => {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 50, backgroundColor: 'white' }}>
             <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                 <LottieView
-                    source={require('../../../assets/Logo.json')}
+                    source={require('../../../assets/anim/Logo.json')}
                     autoPlay
                     speed={0.8}
                     loop={false}

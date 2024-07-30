@@ -18,7 +18,7 @@ export const ProfileScreen = message => {
 // TODO: add photo change
 
     return (
-        <ScrollView style={{ backgroundColor: 'white' }}>
+        <ScrollView contentContainerStyle={{ flex: 1 }}>
             <View style={{ flex: 1, alignItems: 'center', backgroundColor: 'white' }}>
                 <View style={{ alignItems: 'center', justifyContent: 'center', }}>
                     {showLetter ? <Text style={{ fontSize: 40, position: 'absolute', zIndex: 100 }}>J</Text> : null}
