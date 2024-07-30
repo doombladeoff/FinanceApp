@@ -3,12 +3,47 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
 import { HelloUser } from "../../components/HelloUser";
-import { transactions } from "../../../transactionData";
 import { TransactionItem } from "../../components/TransactionItem";
 import { useNavigation } from "@react-navigation/native";
+import { FIREBASE_AUTH } from "../../../config/FirebaseConfig";
+import { useCallback, useEffect, useState } from "react";
+import { getUserData } from "../../../services/getUserData";
+import { EmptyListTransaction } from "../../components/EmptyListTransaction";
 
+const Buttons = [
+    { name: "send", label: "Send", icon: Ionicons },
+    { name: "wallet", label: "Top Up", icon: Ionicons },
+    { name: "cash-multiple", label: "Pay", icon: MaterialCommunityIcons },
+    { name: "boxes-stacked", label: "More", icon: FontAwesome6 }
+]
 export const HomeScreen = () => {
     const navigation = useNavigation();
+
+    const user = FIREBASE_AUTH?.currentUser;
+    const [refreshing, setRefreshing] = useState(false);
+    const [transactions, setTransactions] = useState([]);
+    const [balance, setBalance] = useState(0);
+
+    const getTransactions = useCallback(async () => {
+        try {
+            setRefreshing(true);
+            const { transactions, balance } = await getUserData(user);
+            setTransactions(transactions);
+            setBalance(balance)
+        } catch (error) {
+            console.error('Error getting transactions:', error);
+        } finally {
+            setRefreshing(false);
+        }
+    });
+
+    useEffect(() => {
+        getTransactions();
+    }, []);
+
+
+    const handleNavigate = (screen, data) => navigation.navigate(screen, data);
+
     return (
         <LinearGradient
             colors={['#40b6e8', '#0e6cdd']}
@@ -17,7 +52,7 @@ export const HomeScreen = () => {
             style={{ flex: 1 }}
         >
             <SafeAreaView style={{ flex: 1 }}>
-                <View style={{ flex: 1, paddingTop: Platform.OS === "android" ? 40 : null }}>
+                <View style={{ flex: 1, paddingTop: Platform.OS === "android" ? 40 : 20 }}>
                     <View style={{ paddingHorizontal: 20 }}>
                         <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
                             <HelloUser/>
@@ -29,16 +64,30 @@ export const HomeScreen = () => {
                                 fontWeight: 'bold',
                                 paddingTop: 10,
                                 color: 'white'
-                            }}>$26,520</Text>
+                            }}>${balance}</Text>
                         </View>
+
                         <View style={styles.iconsContainer}>
-                            {[
-                                { name: "send", label: "Send", icon: Ionicons },
-                                { name: "wallet", label: "Top Up", icon: Ionicons },
-                                { name: "cash-multiple", label: "Pay", icon: MaterialCommunityIcons },
-                                { name: "boxes-stacked", label: "More", icon: FontAwesome6 }
-                            ].map((item, index) => (
-                                <TouchableOpacity key={index}>
+                            {Buttons.map((item, index) => (
+                                <TouchableOpacity
+                                    key={index}
+                                    onPress={() => {
+                                        switch (item.label) {
+                                            case "Send":
+                                                handleNavigate('TransactionStack', { balance })
+                                                break;
+                                            case "Pay":
+                                                handleNavigate('PayScreen', { balance })
+                                                break;
+                                            case "Top Up":
+                                                //TODO
+                                                break;
+                                            case "More":
+                                                //TODO
+                                                break;
+                                        }
+                                    }}
+                                >
                                     <View style={{ alignItems: "center" }}>
                                         <item.icon name={item.name} size={30} color="white" style={styles.icons}/>
                                         <Text style={{ color: "white", paddingTop: 5 }}>{item.label}</Text>
@@ -52,19 +101,21 @@ export const HomeScreen = () => {
                         <View
                             style={{ flexDirection: "row", justifyContent: "space-between", padding: 20, top: 10 }}>
                             <Text style={{ fontSize: 16, fontWeight: "bold" }}>Recent Transaction</Text>
-                            <TouchableOpacity onPress={() => navigation.navigate("RecentTransactions", transactions)}>
+                            <TouchableOpacity onPress={() => handleNavigate('RecentTransactions', transactions)}>
                                 <Text style={{ fontSize: 16, fontWeight: "bold", color: "blue" }}>See More</Text>
                             </TouchableOpacity>
                         </View>
 
                         <FlatList
-                            data={transactions.slice(0, 5)}
+                            data={transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5)}
+                            onRefresh={getTransactions}
+                            refreshing={refreshing}
+                            ListEmptyComponent={<EmptyListTransaction/>}
                             renderItem={({ item }) => <TransactionItem transaction={item}/>}
-                            contentContainerStyle={{ paddingHorizontal: 20 }}
+                            contentContainerStyle={{ paddingHorizontal: 20, flex: transactions.length > 0 ? 0 : 1 }}
                             keyExtractor={item => item.id}
                         />
                     </View>
-
                 </View>
             </SafeAreaView>
         </LinearGradient>
@@ -90,7 +141,7 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         marginTop: 30,
         borderTopLeftRadius: 30,
-        borderTopRightRadius: 30
+        borderTopRightRadius: 30,
     },
     transactionIconContainer: {
         width: 50,
@@ -113,5 +164,5 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         marginLeft: 15,
         flexDirection: "row"
-    }
+    },
 });

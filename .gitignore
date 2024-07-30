@@ -1,5 +1,6 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 /.idea
+/config/FirebaseConfig.js
+/store
 # dependencies
 node_modules/
 
@@ -33,5 +34,3 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
-config/FirebaseConfig.js
-/store

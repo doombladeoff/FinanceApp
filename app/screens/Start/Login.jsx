@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
     ActivityIndicator,
+    Alert,
     Keyboard,
     StyleSheet,
     Text,
@@ -9,33 +10,50 @@ import {
     View
 } from "react-native";
 import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
-import { InputWithTitle } from "../../components/InputWithTitle";
 
 import { FIREBASE_AUTH } from "../../../config/FirebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { useForm } from "react-hook-form";
+import { InputController } from "../../components/InputController";
+import { LoginFields } from "../../../constants/inputFields";
+import { useNavigation } from "@react-navigation/native";
 
-const fields = [
-    { title: 'Email', placeholder: 'example@mail.com' },
-    { title: 'Password', placeholder: '********', secureTextEntry: true },
-]
 export const LoginScreen = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const navigation = useNavigation();
+    const form = useForm({
+            defaultValues: {
+                email: '',
+                password: '',
+            },
+        }),
+        {
+            control,
+            handleSubmit,
+            formState: { errors },
+        } = form
+
+    const onError = (data) => {
+        console.error(JSON.stringify(data, null, 2));
+    }
+
     const [loading, setLoading] = useState(false);
     const auth = FIREBASE_AUTH
 
-    const signIn = async () => {
+    const onSubmit = async (data) => {
+        console.log(data)
+        const { email, password } = data;
         setLoading(true);
         try {
             const response = await signInWithEmailAndPassword(auth, email, password);
-            console.log(response)
+            console.log(response);
         } catch (error) {
-            console.log(error);
-            alert('Sign in Failed' + error.message)
+            if (error.code === 'auth/invalid-credential') Alert.alert('Error', 'Wrong Email or Password');
+            if (error.code === 'auth/invalid-email') Alert.alert('Error', 'Wrong Email');
         } finally {
             setLoading(false);
         }
-    }
+    };
+
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.container}>
@@ -44,23 +62,33 @@ export const LoginScreen = () => {
                     <Text style={styles.loginText}>Log in</Text>
                 </View>
                 <View style={{ paddingTop: 20 }}>
-                    {fields.map(field => <InputWithTitle
-                            key={field.title}
-                            title={field.title}
-                            placeholder={field.placeholder}
-                            secureTextEntry={field.secureTextEntry}
-                            style={styles.input}
-                            setEmail={setEmail}
-                            setPassword={setPassword}
-                        />
-                    )}
+                    {LoginFields.map(field => (
+                        <>
+                            <InputController
+                                key={field.key}
+                                name={field.name}
+                                requiredMessage={'This field is required'}
+                                control={control}
+                                pattern={{
+                                    value: field.pattern,
+                                    message: field.errorMessage
+                                }}
+                                title={field.title}
+                                placeholder={field.placeholder}
+                                secureTextEntry={field.secureTextEntry}
+                                style={styles.input}
+                            />
+                            {errors[field.name] &&
+                                <Text style={{ color: 'red', paddingBottom: 10 }}>{errors[field.name].message}</Text>}
+                        </>
+                    ))}
 
                     <Text style={styles.forgotText}>Forgot password?</Text>
 
                     {loading ? <ActivityIndicator size={'large'} color={'rgb(26,83,204)'}/> : (
                         <>
                             <TouchableOpacity
-                                onPress={signIn}
+                                onPress={handleSubmit((data) => onSubmit(data), onError)}
                                 style={styles.loginButton}
                             >
                                 <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>Log in</Text>
@@ -90,7 +118,9 @@ export const LoginScreen = () => {
 
                     <View style={styles.haveAccountContainer}>
                         <Text style={{ fontWeight: '300' }}>Don't have an account yet?</Text>
-                        <Text style={{ fontWeight: 'bold', color: 'rgb(26,83,204)' }}>Register Now</Text>
+                        <TouchableOpacity onPress={() => navigation.replace('Register')}>
+                            <Text style={{ fontWeight: 'bold', color: 'rgb(26,83,204)' }}>Register Now</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>

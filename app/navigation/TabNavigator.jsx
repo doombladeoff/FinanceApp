@@ -11,16 +11,6 @@ export const TabNavigator = () => {
             screenOptions={{
                 headerTitleAlign: "center",
                 tabBarShowLabel: false,
-                tabBarStyle: {
-                    shadowColor: 'black',
-                    shadowOffset: {
-                        width: 0,
-                        height: 25,
-                    },
-                    shadowOpacity: 1,
-                    shadowRadius: 10,
-                    elevation: 15,
-                }
             }}>
             <Tab.Screen
                 name="Home"
@@ -48,6 +38,8 @@ export const TabNavigator = () => {
                 name="History"
                 component={HistoryScreen}
                 options={{
+                    lazy: false,
+                    headerShadowVisible: false,
                     tabBarIcon: ({ color, size }) => (
                         <Fontisto name="history" size={size} color={color}/>
                     ),

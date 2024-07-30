@@ -3,7 +3,7 @@ import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View 
 import { Entypo, FontAwesome, MaterialIcons, Octicons } from "@expo/vector-icons";
 import { FIREBASE_AUTH } from "../../../config/FirebaseConfig";
 import { updateProfile } from "firebase/auth";
-import Accordion from "../../components/Accordion";
+import { AccordionItem } from "../../components/AccordionItem";
 
 export const ProfileScreen = message => {
     const [showLetter, setShowLetter] = useState(true);
@@ -26,7 +26,8 @@ export const ProfileScreen = message => {
                         source={{ uri: 'https://via.placeholde111r.com/100' }}
                         onLoadEnd={() => setShowLetter(false)}
                         onError={() => setShowLetter(true)}
-                        style={styles.image}/>
+                        style={styles.image}
+                    />
                 </View>
 
                 <View style={{ marginTop: 20, width: '80%' }}>
@@ -47,8 +48,9 @@ export const ProfileScreen = message => {
                     <Text style={{ fontSize: 20, marginVertical: 10 }}>Settings</Text>
 
                     <View style={[styles.container, { flexDirection: 'column' }]}>
-                        <Accordion
-                            title={'Edit Username'}
+                        <AccordionItem
+                            label={'Edit Display Name'}
+                            otherStyle={{ justifyContent: 'center' }}
                             IconType={FontAwesome}
                             iconName={'user'}
                         >
@@ -63,12 +65,15 @@ export const ProfileScreen = message => {
                             >
                                 <Text style={styles.saveText}>Save</Text>
                             </TouchableOpacity>
-                        </Accordion>
+                        </AccordionItem>
+
                         <View style={{ height: 1, backgroundColor: 'black', marginVertical: 5 }}/>
-                        <Accordion
-                            title={'Change Email'}
+
+                        <AccordionItem
+                            label={'Change Email'}
                             IconType={Entypo}
                             iconName={'email'}
+                            otherStyle={{ justifyContent: 'center' }}
                         >
                             <TextInput
                                 value={emailInput}
@@ -78,13 +83,15 @@ export const ProfileScreen = message => {
                             <TouchableOpacity style={styles.saveButton}>
                                 <Text style={styles.saveText}>Save</Text>
                             </TouchableOpacity>
-                        </Accordion>
+                        </AccordionItem>
+
                         <View style={{ height: 1, backgroundColor: 'black', marginVertical: 5 }}/>
 
-                        <Accordion
-                            title={'Reset Password'}
+                        <AccordionItem
+                            label={'Reset Password'}
                             IconType={MaterialIcons}
                             iconName={'password'}
+                            otherStyle={{ justifyContent: 'center' }}
                         >
                             <TextInput
                                 value={passwordInput}
@@ -94,29 +101,29 @@ export const ProfileScreen = message => {
                             <TouchableOpacity style={styles.saveButton}>
                                 <Text style={styles.saveText}>Save</Text>
                             </TouchableOpacity>
-                        </Accordion>
+                        </AccordionItem>
                     </View>
 
                     <Text style={{ fontSize: 20, marginVertical: 10 }}>General</Text>
 
                     <View style={[styles.container, { flexDirection: 'column' }]}>
-
-                        <Accordion
-                            title={'Feedback'}
+                        <AccordionItem
+                            label={'Feedback'}
                             IconType={MaterialIcons}
                             iconName={'feedback'}
                         >
-                            <Text>Edit Username</Text>
-                        </Accordion>
+                            <Text>//////////</Text>
+                        </AccordionItem>
+
                         <View style={{ height: 1, backgroundColor: 'black', marginVertical: 5 }}/>
 
-                        <Accordion
-                            title={'About Application'}
+                        <AccordionItem
+                            label={'About Application'}
                             IconType={Octicons}
                             iconName={'info'}
                         >
-                            <Text>Edit Username</Text>
-                        </Accordion>
+                            <Text>////////</Text>
+                        </AccordionItem>
                     </View>
 
                     <View style={{ marginVertical: 10 }}/>
@@ -159,19 +166,16 @@ const styles = StyleSheet.create({
         zIndex: 1
     },
     input: {
-        padding: 10,
+        padding: 5,
         borderRadius: 5,
-        borderWidth: 1,
-        marginHorizontal: 5
+        borderBottomWidth: 1,
+        marginBottom: 10
     },
     saveButton: {
-        padding: 10,
+        paddingVertical: 10,
+        paddingHorizontal: 50,
         borderRadius: 5,
-        marginHorizontal: 5,
-        alignItems: 'center',
-        justifyContent: 'center',
         backgroundColor: 'skyblue',
-        width: '50%',
         alignSelf: 'center',
     },
     saveText: {

@@ -2,16 +2,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { WelcomeScreen } from "./Welcome";
 import { RegisterScreen } from "./Register";
 import { LoginScreen } from "./Login";
-import { TouchableOpacity } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { CustomBackButton } from "../../components/Header/CustomBackButton";
 
-const CustomBackButton = ({ navigation }) => {
-    return (
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color="black"/>
-        </TouchableOpacity>
-    );
-};
 export const StartScreen = () => {
     const Stack = createNativeStackNavigator();
     return (
