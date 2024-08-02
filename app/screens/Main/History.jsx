@@ -3,32 +3,97 @@ import { AccordionItem } from "../../components/AccordionItem";
 import { TransactionItem } from "../../components/TransactionItem";
 import { EmptyListTransaction } from "../../components/EmptyListTransaction";
 import { useTransactions } from "../../../hooks/useTransictions";
+import DropDownPicker from 'react-native-dropdown-picker';
+import { useState, useEffect } from 'react';
+
+const filterTransactionsByPeriod = (transactions, period) => {
+    const now = new Date();
+    switch (period) {
+      case 'today':
+        return transactions.filter(transaction => {
+          const transactionDate = new Date(transaction.date);
+          return (
+            transactionDate.getDate() === now.getDate() &&
+            transactionDate.getMonth() === now.getMonth() &&
+            transactionDate.getFullYear() === now.getFullYear()
+          );
+        });
+      case 'thisWeek':
+      const startOfWeekDate = new Date(now);
+      startOfWeekDate.setDate(now.getDate() - now.getDay());
+      const endOfWeekDate = new Date(startOfWeekDate);
+      endOfWeekDate.setDate(startOfWeekDate.getDate() + 6);
+      return transactions.filter(transaction => {
+        const transactionDate = new Date(transaction.date);
+        return (
+          transactionDate >= startOfWeekDate && transactionDate <= endOfWeekDate
+        );
+      });
+      case 'thisMonth':
+        return transactions.filter(transaction => {
+          const transactionDate = new Date(transaction.date);
+          return (
+            transactionDate.getMonth() === now.getMonth() &&
+            transactionDate.getFullYear() === now.getFullYear()
+          );
+        });
+      case 'thisYear':
+        return transactions.filter(transaction => {
+          const transactionDate = new Date(transaction.date);
+          return (
+            transactionDate.getFullYear() === now.getFullYear()
+          );
+        });
+      default:
+        return transactions;
+    }
+  };
 
 export const HistoryScreen = () => {
     const { transactions, refreshing, getTransactions } = useTransactions();
 
-    const IncomeTransactions = transactions.filter(transaction => transaction.type === 'Income');
-    const ExpenseTransactions = transactions.filter(transaction => transaction.type === 'Expense');
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState('thisWeek');
+    const [items, setItems] = useState([
+      { label: 'Today', value: 'today' },
+      { label: 'This Week', value: 'thisWeek' },
+      { label: 'This Month', value: 'thisMonth' },
+      { label: 'This Year', value: 'thisYear' }
+
+    ]);
+
+    const [filteredIncomeTransactions, setFilteredIncomeTransactions] = useState([]);
+    const [filteredExpenseTransactions, setFilteredExpenseTransactions] = useState([]);
+
+    useEffect(() => {
+        const incomeTransactions = transactions.filter(transaction => transaction.type === 'Income');
+        const expenseTransactions = transactions.filter(transaction => transaction.type === 'Expense');
+        
+        setFilteredIncomeTransactions(filterTransactionsByPeriod(incomeTransactions, value));
+        setFilteredExpenseTransactions(filterTransactionsByPeriod(expenseTransactions, value));
+    }, [value, transactions]);
 
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
-            <View style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                paddingVertical: 20,
-                paddingHorizontal: 20
-            }}>
+            <View style={styles.headerContainer}>
                 <Text style={{ fontWeight: "bold", fontSize: 14 }}>Filter</Text>
-                <Text style={{ fontWeight: "bold", fontSize: 14 }}>This Week</Text>
+                <DropDownPicker
+                    open={open}
+                    value={value}
+                    items={items}
+                    setOpen={setOpen}
+                    setValue={setValue}
+                    setItems={setItems}
+                    labelStyle={{color: 'skyblue', textAlign:'right'}}
+                    containerStyle={{ width: 150, zIndex: 10000}}
+                    style={{ borderWidth: 0}}
+                    dropDownContainerStyle={styles.dropDownContainerStyle}
+                    placeholder="Select a period"
+                />
             </View>
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{
-                    justifyContent: "space-between",
-                    gap: 20,
-                    overflow: 'hidden',
-                    padding: 20
-                }}
+                contentContainerStyle={styles.scrollContainer}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
@@ -40,8 +105,8 @@ export const HistoryScreen = () => {
                     label={'Income'}
                     otherStyle={styles.accordionOtherStyle}
                 >
-                    {IncomeTransactions.length === 0 ? <EmptyListTransaction /> : (
-                        IncomeTransactions.map(transaction =>
+                    {filteredIncomeTransactions.length === 0 ? <EmptyListTransaction /> : (
+                        filteredIncomeTransactions.map(transaction =>
                             <TransactionItem key={transaction.id} transaction={transaction} />
                         )
                     )}
@@ -50,8 +115,8 @@ export const HistoryScreen = () => {
                     label={'Expense'}
                     otherStyle={styles.accordionOtherStyle}
                 >
-                    {ExpenseTransactions.length === 0 ? <EmptyListTransaction /> : (
-                        ExpenseTransactions.map(transaction =>
+                    {filteredExpenseTransactions.length === 0 ? <EmptyListTransaction /> : (
+                        filteredExpenseTransactions.map(transaction =>
                             <TransactionItem key={transaction.id} transaction={transaction} />
                         )
                     )}
@@ -62,6 +127,19 @@ export const HistoryScreen = () => {
 }
 
 const styles = StyleSheet.create({
+    headerContainer:{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: 'center',
+        paddingVertical: 20,
+        paddingHorizontal: 20
+    },
+    scrollContainer:{
+        justifyContent: "space-between",
+        gap: 20,
+        overflow: 'hidden',
+        padding: 20
+    },
     accordionOtherStyle: {
         backgroundColor: 'white',
         padding: 10,
@@ -71,5 +149,16 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.15,
         shadowRadius: 3.84,
         elevation: 5
+    },
+    dropDownContainerStyle:{
+        borderWidth: 0, 
+        elevation: 2,   
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 1,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 1.41,
     }
 })
