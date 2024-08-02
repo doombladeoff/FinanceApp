@@ -63,9 +63,8 @@ export const LoginScreen = () => {
                 </View>
                 <View style={{ paddingTop: 20 }}>
                     {LoginFields.map(field => (
-                        <>
+                        <View key={field.key}>
                             <InputController
-                                key={field.key}
                                 name={field.name}
                                 requiredMessage={'This field is required'}
                                 control={control}
@@ -80,7 +79,7 @@ export const LoginScreen = () => {
                             />
                             {errors[field.name] &&
                                 <Text style={{ color: 'red', paddingBottom: 10 }}>{errors[field.name].message}</Text>}
-                        </>
+                        </View>
                     ))}
 
                     <Text style={styles.forgotText}>Forgot password?</Text>

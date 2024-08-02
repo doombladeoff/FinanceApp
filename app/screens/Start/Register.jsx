@@ -79,9 +79,8 @@ export const RegisterScreen = () => {
 
                 <View style={{ paddingTop: 20 }}>
                     {fields.map(field => (
-                        <>
+                        <View key={field.key}>
                             <InputController
-                                key={field.key}
                                 name={field.name}
                                 requiredMessage={'This field is required'}
                                 control={control}
@@ -96,7 +95,7 @@ export const RegisterScreen = () => {
                             />
                             {errors[field.name] &&
                                 <Text style={{ color: 'red', paddingBottom: 10 }}>{errors[field.name].message}</Text>}
-                        </>
+                        </View>
                     ))}
 
                     {loading ? <ActivityIndicator size={'large'} color={'rgb(26,83,204)'}/> : (
