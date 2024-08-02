@@ -1,9 +1,8 @@
 import { Text, View } from "react-native";
 import { StatisticCard } from "../../components/StatisticCard";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { getUserData } from "../../../services/getUserData";
-import { FIREBASE_AUTH } from "../../../config/FirebaseConfig";
+import { useEffect, useRef, useState } from "react";
 import { BarChart } from "react-native-gifted-charts";
+import { useTransactions } from "../../../hooks/useTransictions";
 
 const aggregateTransactionsByMonth = (transactions) => {
     const result = Array(12).fill().map(() => ({
@@ -23,6 +22,7 @@ const aggregateTransactionsByMonth = (transactions) => {
     return result;
 };
 const prepareChartData = (aggregatedData) => {
+    if(!aggregatedData || aggregatedData.length <= 0) return;
     const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const data = [];
     aggregatedData.forEach((monthData, index) => {
@@ -55,42 +55,34 @@ const calculateChartConfig = (aggregatedData) => {
     return { stepValue, yAxisLabelTexts, roundedMaxValue, maxExpense, maxIncome };
 };
 export const StatisticScreen = () => {
-    const user = FIREBASE_AUTH?.currentUser;
-    const [valueData, setValueData] = useState([]);
+    const { transactions } = useTransactions();
     const [viewSize, setViewSize] = useState({
         height: 0,
         width: 0
     });
-    const scrollRef = useRef(null)
+    const scrollRef = useRef(null);
+
     const handleLayout = (event) => {
         const { height, width } = event.nativeEvent.layout;
         setViewSize({ height, width });
     };
 
-    const getTransactionsValue = useCallback(async () => {
-        try {
-            const { transactions } = await getUserData(user);
-            setValueData(transactions);
-        } catch (error) {
-            console.error('Error getting transactions:', error);
-        }
-    });
-
     useEffect(() => {
-        getTransactionsValue();
         if (scrollRef.current) {
             const currentMonth = new Date().getMonth(); // 0-11
             const offset = currentMonth * (16 + 10 + 14); // barWidth + initialSpacing + spacing
             scrollRef.current.scrollTo({ x: offset, animated: true });
         }
-    }, []);
-    const aggregatedData = aggregateTransactionsByMonth(valueData);
+    }, [transactions]);
+
+    const aggregatedData =  aggregateTransactionsByMonth(transactions);
     const dataV = prepareChartData(aggregatedData);
     const {
         noOfSections,
         yAxisLabelTexts,
         roundedMaxValue,
     } = calculateChartConfig(aggregatedData);
+    //console.log('noOfSections:', noOfSections, 'yAxisLabelTexts:', yAxisLabelTexts,'roundedMaxValue:',roundedMaxValue );
 
     const income = aggregatedData.reduce((acc, data) => acc + data.income, 0);
     const expense = aggregatedData.reduce((acc, data) => acc + data.expense, 0);

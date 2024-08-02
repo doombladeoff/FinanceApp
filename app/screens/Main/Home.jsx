@@ -5,11 +5,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { HelloUser } from "../../components/HelloUser";
 import { TransactionItem } from "../../components/TransactionItem";
 import { useNavigation } from "@react-navigation/native";
-import { FIREBASE_AUTH } from "../../../config/FirebaseConfig";
-import { useCallback, useEffect, useState } from "react";
-import { getUserData } from "../../../services/getUserData";
 import { EmptyListTransaction } from "../../components/EmptyListTransaction";
 
+
+import { useBalance } from "../../../hooks/useBalance";
+import { useTransactions } from "../../../hooks/useTransictions";
 const Buttons = [
     { name: "send", label: "Send", icon: Ionicons },
     { name: "wallet", label: "Top Up", icon: Ionicons },
@@ -19,28 +19,8 @@ const Buttons = [
 export const HomeScreen = () => {
     const navigation = useNavigation();
 
-    const user = FIREBASE_AUTH?.currentUser;
-    const [refreshing, setRefreshing] = useState(false);
-    const [transactions, setTransactions] = useState([]);
-    const [balance, setBalance] = useState(0);
-
-    const getTransactions = useCallback(async () => {
-        try {
-            setRefreshing(true);
-            const { transactions, balance } = await getUserData(user);
-            setTransactions(transactions);
-            setBalance(balance)
-        } catch (error) {
-            console.error('Error getting transactions:', error);
-        } finally {
-            setRefreshing(false);
-        }
-    }, [user]);
-
-    useEffect(() => {
-        getTransactions();
-    }, [getTransactions]);
-
+    const { transactions, refreshing, getTransactions } = useTransactions();
+    const balance = useBalance();
 
     const handleNavigate = (screen, data) => navigation.navigate(screen, data);
 
